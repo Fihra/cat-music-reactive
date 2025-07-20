@@ -51,6 +51,12 @@ function randomizeColors() {
     return random(0, 255);
 }
 
+function keyPressed(){
+    if(keyCode === 32 || key === ' '){
+        togglePlay();
+    }
+}
+
 function setup(){
     mainCanvas = createCanvas(400, 400);
     mainCanvas.id('main-canvas');
@@ -82,7 +88,7 @@ function togglePlay(){
     
 
     // console.log(song.isLooping());
-    if(song.isPlaying()){
+    if(song.isPlaying() ){
         song.stop();
         waveformCanvas.clear();
         playButton.html("Play");
@@ -105,6 +111,7 @@ function draw(){
     image(waveformCanvas, 0, 0);
     waveformCanvas.beginShape();
     noFill();
+    fill(100, 100, 100);
     for(let i = 0; i < waveform.length; i++){
         // console.log(waveform[i]);
         let waveformX = map(i, 0, waveform.length, 0, width);
@@ -125,9 +132,10 @@ function draw(){
     //     waveformCanvas.vertex(waveformX)
     // }
 
+    fill(120, 120, 20);
     let playheadX = map(song.currentTime(), 0 , song.duration(), 0, width);
-    waveformCanvas.stroke(selectedColor, 0, 0);
-    waveformCanvas.line(playheadX, 0, playheadX, height);
+    waveformCanvas.stroke(0, 0, selectedColor);
+    waveformCanvas.line(playheadX, 100, playheadX, height/2);
     
     fill(100, 0, 0);
     triangle(width/2 - 100, 100, 150, 120, width/2, 200);
