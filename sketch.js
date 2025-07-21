@@ -2,6 +2,7 @@ console.log("hooked");
 
 let mainCanvas;
 let waveformCanvas;
+let seekerCanvas;
 
 let song;
 let bpmDetector;
@@ -10,6 +11,9 @@ let beat;
 let peakDetect;
 
 let waveform;
+
+let volume;
+let volumeLabel;
 
 //eyes
 let eyeSizeX = 15;
@@ -64,6 +68,9 @@ function setup(){
     waveformCanvas = createGraphics(400, 400);
     waveformCanvas.background(255, 0, 0, 0.5);
 
+    seekerCanvas = createGraphics(400, 400);
+    seekerCanvas.background(0, 255, 0, 0.3);
+
     // mainCanvas.position(windowWidth/2, windowHeight);
     selectedColor = randomizeColors();
     playButton = createButton("Play");
@@ -82,6 +89,12 @@ function setup(){
 
     currentMouthX = closeMouthX;
     currentMouthY = closeMouthY;
+
+    volume = select("#volume");
+    song.setVolume(volume.value());
+    volumeLabel = document.getElementById("volume-value");
+    volumeLabel.innerText = Math.floor(volume.value() * 100);
+
 }
 
 function togglePlay(){
@@ -90,7 +103,7 @@ function togglePlay(){
     // console.log(song.isLooping());
     if(song.isPlaying() ){
         song.stop();
-        waveformCanvas.clear();
+        seekerCanvas.clear();
         playButton.html("Play");
         
     } else{
@@ -101,12 +114,19 @@ function togglePlay(){
     }
 }
 
+function controlVolume() {
+    volumeLabel.innerText = Math.floor(volume.value() * 100);
+    song.setVolume(volume.value());
+}
+
 function draw(){
     background(220);
 
     if(song.currentTime() < 0.1 && song.isLooping()){
-        waveformCanvas.clear();
+        seekerCanvas.clear();
     }
+
+    controlVolume();
 
     image(waveformCanvas, 0, 0);
     waveformCanvas.beginShape();
@@ -120,23 +140,33 @@ function draw(){
     }
     
     waveformCanvas.endShape();
-
-    if(song.currentTime() <= 0 && song.isPlaying()){
-        console.log("inside here??")
-        waveformCanvas.clear();
-    }
-
     // for(let i = 0; i < waveform.length; i++){
     //     let playheadX = map(song.currentTime(), 0, song.duration(), 0, width);
     //     waveformCanvas.stroke(selectedColor, 0, 0);
     //     waveformCanvas.vertex(waveformX)
     // }
 
+    image(seekerCanvas, 0, 0);
+
+    seekerCanvas.beginShape();
+
     fill(120, 120, 20);
-    let playheadX = map(song.currentTime(), 0 , song.duration(), 0, width);
-    waveformCanvas.stroke(0, 0, selectedColor);
-    waveformCanvas.line(playheadX, 100, playheadX, height/2);
+
+    for(let j = 0; j < waveform.length; i++){
+        let playheadX = map(song.currentTime(), 0 , song.duration(), 0, width);
+        seekerCanvas.stroke(0, 0, selectedColor);
+        seekerCanvas.line(playheadX, 100, playheadX, height/2);
+    }
+
+
     
+    seekerCanvas.endShape();
+
+    if(song.currentTime() <= 0 && song.isPlaying()){
+    console.log("inside here??")
+    seekerCanvas.clear();
+    }
+
     fill(100, 0, 0);
     triangle(width/2 - 100, 100, 150, 120, width/2, 200);
     triangle(width/2 + 100, 100, 250, 120, width/2, 200);
@@ -166,6 +196,9 @@ function draw(){
     // console.log(peakDetect);
     //peakDetect.energy > 0.2
     // if(fft.getEnergy("bass") > 200)
+
+    console.log(fft.getEnergy("bass"));
+    // console.log(volume.value());
  
     if(fft.getEnergy("bass") >= 230){
         // console.log("beat");
