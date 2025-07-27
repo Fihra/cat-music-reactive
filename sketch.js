@@ -6,7 +6,6 @@ let seekerCanvas;
 
 let song;
 let fft;
-let peaks;
 
 let waveform;
 
@@ -45,7 +44,6 @@ let nextSong = null;
 function preload(){
     song = loadSound('random_sketch3.mp3');
     currentSong = song;
-    
 }
 
 function randomizeColors() {
@@ -139,14 +137,16 @@ function controlVolume() {
     song.setVolume(volume.value());
 }
 
-function setupWaveform(fftWave, currentPlaybackPosition){
+function setupWaveform(peaks, currentPlaybackPosition){
         //waveform
         image(waveformCanvas, 0, 0);
         waveformCanvas.fill(0, 200, 0);
+
+        waveformCanvas.clear();
         
-        for(let i = 0; i < fftWave.length; i++){
-            let waveformX = map(i, 0, fftWave.length, 0, width);
-            let waveformY = map(waveform[i], -1, 1, 0, height);
+        for(let i = 0; i < peaks.length; i++){
+            let waveformX = map(i, 0, peaks.length, 0, width);
+            let waveformY = map(peaks[i], -1, 1, 0, height);
 
             let barHeight = height - waveformY;
 
@@ -174,7 +174,9 @@ function draw(){
         let currentPlaybackPosition = map(song.currentTime(), 0, song.duration(), 0, width);
         let fftWave = fft.waveform();
 
-        setupWaveform(fftWave, currentPlaybackPosition);
+        let peaks = song.getPeaks();
+
+        setupWaveform(peaks, currentPlaybackPosition);
     }
 
     if(song.currentTime() < 0.1 && song.isLooping()){
