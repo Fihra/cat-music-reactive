@@ -106,6 +106,7 @@ function setup(){
         unhighlight();
         if(file.type === 'audio'){
             loadSound(file.data, (newSong) => {
+                stopSong();
                 song = newSong;
                 fft.setInput(song);
             })
