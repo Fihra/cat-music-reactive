@@ -5,10 +5,8 @@ let waveformCanvas;
 let seekerCanvas;
 
 let song;
-let bpmDetector;
 let fft;
-let beat;
-let peakDetect;
+let peaks;
 
 let waveform;
 
@@ -22,15 +20,9 @@ let eyeSizeY = 8;
 let counterWave = 45;
 let speed = 0.01;
 
-let interval = 1000;
-let lastSwitchTime = 0;
-let switchState = false;
-
 let playButton;
 
 let timer = 12;
-let openCounter = 0;
-let closeCounter = 0;
 
 //closeMouth
 let closeMouthX = 20;
@@ -49,8 +41,6 @@ let audioZone = document.getElementById("drop-zone");
 
 let currentSong = null;
 let nextSong = null;
-
-let songSwitched = false;
 
 function preload(){
     song = loadSound('random_sketch3.mp3');
@@ -117,32 +107,27 @@ function setup(){
     function handleDrop(file) {
         unhighlight();
         if(file.type === 'audio'){
-            nextSong = loadSound(file.data, onSoundLoaded);
+            loadSound(file.data, (newSong) => {
+                song = newSong;
+                fft.setInput(song);
+            })
         } else {
-            console.log("no loaded");
+            console.log("not loaded");
         }
-
     }
 }
 
-
-function onSoundLoaded(nSong){
-    song = nSong;
-    if(currentSong !== nSong){
-        currentSong = nSong;
-        songSwitched = true;
-        fft.setInput(nSong);
-        console.log("hello?");
+function stopSong(){
+    if(song.isPlaying()){
+        song.stop();
+        seekerCanvas.clear();
+        playButton.html("Play");
     }
-    console.log("PLay?");
 }
 
 function togglePlay(){
     if(song.isPlaying() ){
-        song.stop();
-        seekerCanvas.clear();
-        playButton.html("Play");
-        
+        stopSong();
     } else{
         song.loop();
         playButton.html("Stop");
@@ -154,122 +139,95 @@ function controlVolume() {
     song.setVolume(volume.value());
 }
 
-function updateWaveform(){
-    onSoundLoaded()
+function setupWaveform(fftWave, currentPlaybackPosition){
+        //waveform
+        image(waveformCanvas, 0, 0);
+        waveformCanvas.fill(0, 200, 0);
+        
+        for(let i = 0; i < fftWave.length; i++){
+            let waveformX = map(i, 0, fftWave.length, 0, width);
+            let waveformY = map(waveform[i], -1, 1, 0, height);
+
+            let barHeight = height - waveformY;
+
+            if(waveformX < currentPlaybackPosition){
+                waveformCanvas.fill(100, 200, 0);
+            } else{
+                waveformCanvas.fill(10, 10, 120);
+            }
+            waveformCanvas.noStroke();
+            waveformCanvas.rect(waveformX, waveformY, 1, barHeight);
+            
+        }
+}
+
+function myCat(){
+
 }
 
 function draw(){
     background(220);
-    let fftWave = fft.waveform();
+
+    controlVolume();
+
+    if(song && song.isLoaded()){
+        let currentPlaybackPosition = map(song.currentTime(), 0, song.duration(), 0, width);
+        let fftWave = fft.waveform();
+
+        setupWaveform(fftWave, currentPlaybackPosition);
+    }
 
     if(song.currentTime() < 0.1 && song.isLooping()){
         seekerCanvas.clear();
     }
 
-    controlVolume();
+    noFill();
 
-    let currentPlaybackPosition = map(song.currentTime(), 0, song.duration(), 0, width);
-    
-    // console.log("currentSong: " + currentSong);
-    // console.log("nextSong: " + (nextSong ? nextSong.data: ""));
-
-    // if(songSwitched){
-    //     fft.setInput(currentSong);
-    //     songSwitched = false;
-    // }
-
-    if(songSwitched) {
-        fft.setInput(nextSong);
-        songSwitched = false;
+    if(song.currentTime() <= 0 && song.isPlaying()){
+        seekerCanvas.clear();
     }
 
+    //Ears
+    fill(100, 0, 0);
+    triangle(width/2 - 100, 100, 150, 120, width/2, 200);
+    triangle(width/2 + 100, 100, 250, 120, width/2, 200);
+    
+    //Head
+    ellipse(width/2, height/2, 100, 100);
 
-        //waveform
-        image(waveformCanvas, 0, 0);
-        waveformCanvas.fill(0, 200, 0);
-        waveformCanvas.beginShape();
-        for(let i = 0; i < fftWave.length; i++){
-            let waveformX = map(i, 0, fftWave.length, 0, width);
-            let waveformY = map(waveform[i], -1, 1, 0, height);
+    //Eyes
+    fill(255, 255, 255);
+    curve(width/2 - 100, 140, 155, 200, 200, 200, 250, 500);
+    curve(width/2 + 100, 10, 225, 200, 240, 190, 250, 500);
 
-            if(waveformX < currentPlaybackPosition){
-                waveformCanvas.fill(100, 200, 0);
-                // waveformCanvas.vertex(waveformX, waveformY);
-            } else{
-                
-                waveformCanvas.fill(10, 10, 120);
-            }
-            waveformCanvas.noStroke();
-            waveformCanvas.vertex(waveformX, waveformY);
-            
-        }
+    fft.analyze();
+    peakDetect.update(fft);
+
+    // console.log(fft.getEnergy("bass"));
+    // console.log(peakDetect);
+    //peakDetect.energy > 0.2
+    // if(fft.getEnergy("bass") > 200)
+
+    // console.log(fft.getEnergy("bass"));
+    // console.log(volume.value());
         
-        waveformCanvas.endShape();
+    //Mouth
+    if(fft.getEnergy("bass") >= 230){
+        currentMouthX = openMouthX;
+        currentMouthY = openMouthY;
+    } else {
+        currentMouthX = closeMouthX;
+        currentMouthY = closeMouthY; 
+    }
 
-        //playback waveform
-        image(seekerCanvas, 0, 0);
-        seekerCanvas.fill(0, 220, 0);
-        seekerCanvas.beginShape();
-        for(let i = 0; i < waveform.length; i++){
-            let waveformX = map(i, 0, waveform.length, 0, width);
-            let waveformY = map(waveform[i], -1, 1, 0, height);
+    ellipse(width/2, height/2 + 30, currentMouthX, currentMouthY);
 
-            if(waveformX >= currentPlaybackPosition){
-                seekerCanvas.vertex(waveformX, waveformY);
-            }
-            // let playheadX = map(song.currentTime(), 0 , song.duration(), 0, width);
-            // seekerCanvas.stroke(0, 0, selectedColor);
-            // seekerCanvas.line(playheadX, 100, playheadX, height/2);
-        }
-        seekerCanvas.endShape();
+    //Time Counter
+    fill(255, 255, 255);
+    let currentTimeInSeconds = song.currentTime();
+    let minutes = Math.floor(currentTimeInSeconds / 60);
+    let seconds = Math.floor(currentTimeInSeconds % 60);
 
-        noFill();
-
-        if(song.currentTime() <= 0 && song.isPlaying()){
-            seekerCanvas.clear();
-        }
-
-        //Ears
-        fill(100, 0, 0);
-        triangle(width/2 - 100, 100, 150, 120, width/2, 200);
-        triangle(width/2 + 100, 100, 250, 120, width/2, 200);
-        
-        //Head
-        ellipse(width/2, height/2, 100, 100);
-
-        //Eyes
-        fill(255, 255, 255);
-        curve(width/2 - 100, 140, 155, 200, 200, 200, 250, 500);
-        curve(width/2 + 100, 10, 225, 200, 240, 190, 250, 500);
-
-        fft.analyze();
-        peakDetect.update(fft);
-
-        // console.log(fft.getEnergy("bass"));
-        // console.log(peakDetect);
-        //peakDetect.energy > 0.2
-        // if(fft.getEnergy("bass") > 200)
-
-        // console.log(fft.getEnergy("bass"));
-        // console.log(volume.value());
-        
-        //Mouth
-        if(fft.getEnergy("bass") >= 230){
-            currentMouthX = openMouthX;
-            currentMouthY = openMouthY;
-        } else {
-            currentMouthX = closeMouthX;
-            currentMouthY = closeMouthY; 
-        }
-
-        ellipse(width/2, height/2 + 30, currentMouthX, currentMouthY);
-
-        //Time Counter
-        fill(255, 255, 255);
-        let currentTimeInSeconds = song.currentTime();
-        let minutes = Math.floor(currentTimeInSeconds / 60);
-        let seconds = Math.floor(currentTimeInSeconds % 60);
-
-        let formattedSeconds = nf(seconds, 2);
-        text(minutes + ":" + formattedSeconds, 20, 300);
+    let formattedSeconds = nf(seconds, 2);
+    text(minutes + ":" + formattedSeconds, 20, 300);
 }
