@@ -4,11 +4,17 @@
 }
 
 #drop-zone {
-    border: 5px solid orange;
+    border: 5px solid blue;
     width: 200px;
     height: 100px;
 }
 
 #drop-zone.highlight {
-    border-color: blue;
+    border-style: dashed;
+    border-color: greenyellow;
+}
+
+#volume {
+    border-radius: 5px;
+    height: 100px;
 }
