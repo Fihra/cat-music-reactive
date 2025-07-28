@@ -9,6 +9,8 @@ let fft;
 
 let waveform;
 
+let trackName = "random_sketch3.mp3";
+
 let volume;
 let volumeLabel;
 
@@ -23,6 +25,10 @@ let playButton;
 
 let timer = 12;
 
+let checkThreshold = false;
+let currentEnergy = 0;
+let newEnergy = 0;
+
 //closeMouth
 let closeMouthX = 20;
 let closeMouthY = 5;
@@ -35,6 +41,8 @@ let currentMouthX;
 let currentMouthY;
 
 let selectedColor;
+
+let isThresholdEnergySet = false;
 
 let audioZone = document.getElementById("drop-zone");
 
@@ -57,15 +65,15 @@ function keyPressed(){
 }
 
 function setup(){
-    mainCanvas = createCanvas(400, 400);
+    mainCanvas = createCanvas(800, 400);
     mainCanvas.id('main-canvas');
 
     let audioDrop = select('#drop-zone');
 
-    waveformCanvas = createGraphics(400, 400);
+    waveformCanvas = createGraphics(800, 400);
     waveformCanvas.background(255, 0, 0, 0.5);
 
-    seekerCanvas = createGraphics(400, 400);
+    seekerCanvas = createGraphics(800, 400);
     seekerCanvas.background(0, 255, 0, 0.3);
 
     selectedColor = randomizeColors();
@@ -105,6 +113,8 @@ function setup(){
     function handleDrop(file) {
         unhighlight();
         if(file.type === 'audio'){
+            trackName = file.name;
+            // console.log("Filename: " + file.name);
             loadSound(file.data, (newSong) => {
                 stopSong();
                 song = newSong;
@@ -126,8 +136,10 @@ function stopSong(){
 
 function togglePlay(){
     if(song.isPlaying() ){
+        checkThreshold = false;
         stopSong();
     } else{
+        checkThreshold = true;
         song.loop();
         playButton.html("Stop");
     }
@@ -192,16 +204,16 @@ function draw(){
 
     //Ears
     fill(100, 0, 0);
-    triangle(width/2 - 100, 100, 150, 120, width/2, 200);
-    triangle(width/2 + 100, 100, 250, 120, width/2, 200);
+    triangle(width/2 - 100, 100, 350, 120, width/2, 200);
+    triangle(width/2 + 100, 100, 450, 120, width/2, 200);
     
     //Head
     ellipse(width/2, height/2, 100, 100);
 
     //Eyes
     fill(255, 255, 255);
-    curve(width/2 - 100, 140, 155, 200, 200, 200, 250, 500);
-    curve(width/2 + 100, 10, 225, 200, 240, 190, 250, 500);
+    curve(width/2 - 100, 140, 425, 200, 400, 200, 250, 500);
+    curve(width/2 + 100, 180, 355, 190, 380, 190, 250, 500);
 
     fft.analyze();
     peakDetect.update(fft);
@@ -213,9 +225,21 @@ function draw(){
 
     // console.log(fft.getEnergy("bass"));
     // console.log(volume.value());
+
+    newEnergy = fft.getEnergy("bass");
+
+    if(song.isPlaying() && checkThreshold){
+        if(newEnergy < currentEnergy){
+            checkThreshold = false;
+        } else {
+            currentEnergy = newEnergy;
+        }
+    }
+
+    console.log(fft.getEnergy("bass"));
         
     //Mouth
-    if(fft.getEnergy("bass") >= 230){
+    if(fft.getEnergy("bass") >= 200){
         currentMouthX = openMouthX;
         currentMouthY = openMouthY;
     } else {
@@ -232,5 +256,17 @@ function draw(){
     let seconds = Math.floor(currentTimeInSeconds % 60);
 
     let formattedSeconds = nf(seconds, 2);
-    text(minutes + ":" + formattedSeconds, 20, 300);
+    fill(0, 0, 0, 100);
+    textSize(14);
+    text(trackName, 17, 17);
+
+    fill(255,255,255);
+    text(trackName, 18, 18);
+
+    fill(0, 0, 0, 100);
+    textSize(14);
+    text(minutes + ":" + formattedSeconds, 17, 39);
+
+    fill(255,255,255);
+    text(minutes + ":" + formattedSeconds, 18, 40);
 }
