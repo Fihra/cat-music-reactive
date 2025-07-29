@@ -14,6 +14,9 @@ let trackName = "random_sketch3.mp3";
 let volume;
 let volumeLabel;
 
+let panning;
+let panLabel;
+
 //eyes
 let eyeSizeX = 15;
 let eyeSizeY = 8;
@@ -22,6 +25,7 @@ let counterWave = 45;
 let speed = 0.01;
 
 let playButton;
+let playText;
 
 let timer = 12;
 
@@ -78,6 +82,10 @@ function setup(){
 
     selectedColor = randomizeColors();
     playButton = createButton("Play");
+    playButton.class("play-button");
+
+    playText = createP("Spacebar to Play/Stop");
+    playText.class("play-text");
 
     fft = new p5.FFT();
     peakDetect = new p5.PeakDetect();
@@ -98,6 +106,10 @@ function setup(){
     volumeLabel = document.getElementById("volume-value");
     volumeLabel.innerText = Math.floor(volume.value() * 100);
 
+    panning = select("#panning");
+    song.pan(panning.value());
+    panLabel = document.getElementById("pan-value");
+    
     audioDrop.dragOver(highlight);
     audioDrop.dragLeave(unhighlight);
     audioDrop.drop(handleDrop);
@@ -150,6 +162,19 @@ function controlVolume() {
     song.setVolume(volume.value());
 }
 
+function controlPanning(){
+    panLabel.innerText = panning.value();
+    song.pan(panning.value());
+
+    if(panning.value() > 0.0){
+        panLabel.innerText = "R: " + panning.value();
+    } else if (panning.value() < 0.0){
+        panLabel.innerText = "L: " + panning.value();
+    } else {
+        panLabel.innerText = panning.value();
+    }
+}
+
 function setupWaveform(peaks, currentPlaybackPosition){
         //waveform
         image(waveformCanvas, 0, 0);
@@ -179,9 +204,11 @@ function myCat(){
 }
 
 function draw(){
-    background(220);
+    background(0);
+    textFont("Faustina");
 
     controlVolume();
+    controlPanning();
 
     if(song && song.isLoaded()){
         let currentPlaybackPosition = map(song.currentTime(), 0, song.duration(), 0, width);
@@ -236,7 +263,7 @@ function draw(){
         }
     }
 
-    console.log(fft.getEnergy("bass"));
+    // console.log(fft.getEnergy("bass"));
         
     //Mouth
     if(fft.getEnergy("bass") >= 200){
