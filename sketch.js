@@ -9,13 +9,15 @@ let fft;
 
 let waveform;
 
-let trackName = "random_sketch3.mp3";
+let trackName = "random_sketch1.wav";
 
 let volume;
 let volumeLabel;
 
 let panning;
 let panLabel;
+
+let beatPulse = 50;
 
 //eyes
 let eyeSizeX = 15;
@@ -53,8 +55,73 @@ let audioZone = document.getElementById("drop-zone");
 let currentSong = null;
 let nextSong = null;
 
+let someHeight = 21.5;
+
+let ball = {
+    x: 380,
+    y: 180,
+    jumpHeight: 30,
+    floorHeight: 80,
+    size: 5,
+    xSpeed: 2,
+    ySpeed: 2
+};
+
+let critter = {
+    leftEar: {
+        x1: 400,
+        y1: 120,
+        x2: 500,
+        y2: 80,
+        x3: 500,
+        y3: 40
+    },
+    rightEar: {
+        x1: 280,
+        y1: 60,
+        x2: 400,
+        y2: 120,
+        x3: 300,
+        y3: 120        
+    },
+    head: {
+        x:400,
+        y:150,
+        xSize: 100,
+        ySize: 100
+    },
+    leftEye: {
+        x1: 220,
+        y1: 80,
+        x2: 405,
+        y2: 120,
+        x3: 420,
+        y3: 160,
+        x4: 180,
+        y4: 320 
+    },
+    rightEye: {
+        x1: 300,
+        y1: 40,
+        x2: 345,
+        y2: 120,
+        x3: 390,
+        y3: 160,
+        x4: 200,
+        y4: 450 
+    },
+    mouth: {
+        x: 400,
+        y: 190,
+        closeMouthX: 20,
+        closeMouthY: 5,
+        openMouthX: 75,
+        openMouthY: 25,
+    }
+}
+
 function preload(){
-    song = loadSound('random_sketch3.mp3');
+    song = loadSound('random_sketch1.wav');
     currentSong = song;
 }
 
@@ -126,7 +193,6 @@ function setup(){
         unhighlight();
         if(file.type === 'audio'){
             trackName = file.name;
-            // console.log("Filename: " + file.name);
             loadSound(file.data, (newSong) => {
                 stopSong();
                 song = newSong;
@@ -199,14 +265,41 @@ function setupWaveform(peaks, currentPlaybackPosition){
         }
 }
 
-function myCat(){
+function myCreature(){
+    //Ears
+    fill(100, 0, 0);
+    // triangle(width/2 - 100, 100, 350, 120, width/2, 200);
+    // triangle(width/2 + 100, 100, 450, 120, width/2, 200);
 
+    triangle(critter.leftEar.x1, critter.leftEar.y1, critter.leftEar.x2, critter.leftEar.y2, critter.leftEar.x3, critter.leftEar.y3);
+    triangle(critter.rightEar.x1, critter.rightEar.y1, critter.rightEar.x2, critter.rightEar.y2, critter.rightEar.x3, critter.rightEar.y3);
+    
+    //Head
+    ellipse(critter.head.x, critter.head.y, critter.head.xSize, critter.head.ySize);
+
+    //Eyes
+    fill(255, 255, 255);
+    curve(critter.leftEye.x1, critter.leftEye.y1, critter.leftEye.x2, critter.leftEye.y2, critter.leftEye.x3, critter.leftEye.y3, critter.leftEye.x4, critter.leftEye.y4);
+    curve(critter.rightEye.x1, critter.rightEye.y1, critter.rightEye.x2, critter.rightEye.y2, critter.rightEye.x3, critter.rightEye.y3, critter.rightEye.x4, critter.rightEye.y4);
+
+    console.log("Bass: " + fft.getEnergy("bass") / 255);
+
+    //Mouth
+    if(fft.getEnergy("bass") / 255 >= 0.9){
+        currentMouthX = critter.mouth.openMouthX;
+        currentMouthY = critter.mouth.openMouthY;
+    } else {
+        currentMouthX = critter.mouth.closeMouthX;
+        currentMouthY = critter.mouth.closeMouthY; 
+    }
+
+    // ellipse(width/2, height/2 + 30, currentMouthX, currentMouthY);
+    ellipse(critter.mouth.x, critter.mouth.y, currentMouthX, currentMouthY);
 }
 
 function draw(){
     background(0);
     textFont("Faustina");
-
     controlVolume();
     controlPanning();
 
@@ -229,52 +322,55 @@ function draw(){
         seekerCanvas.clear();
     }
 
-    //Ears
-    fill(100, 0, 0);
-    triangle(width/2 - 100, 100, 350, 120, width/2, 200);
-    triangle(width/2 + 100, 100, 450, 120, width/2, 200);
-    
-    //Head
-    ellipse(width/2, height/2, 100, 100);
-
-    //Eyes
-    fill(255, 255, 255);
-    curve(width/2 - 100, 140, 425, 200, 400, 200, 250, 500);
-    curve(width/2 + 100, 180, 355, 190, 380, 190, 250, 500);
-
     fft.analyze();
     peakDetect.update(fft);
 
-    // console.log(fft.getEnergy("bass"));
+
+
+    myCreature();
+
     // console.log(peakDetect);
     //peakDetect.energy > 0.2
     // if(fft.getEnergy("bass") > 200)
 
-    // console.log(fft.getEnergy("bass"));
-    // console.log(volume.value());
-
-    newEnergy = fft.getEnergy("bass");
-
-    if(song.isPlaying() && checkThreshold){
-        if(newEnergy < currentEnergy){
-            checkThreshold = false;
-        } else {
-            currentEnergy = newEnergy;
-        }
-    }
 
     // console.log(fft.getEnergy("bass"));
         
-    //Mouth
-    if(fft.getEnergy("bass") >= 200){
-        currentMouthX = openMouthX;
-        currentMouthY = openMouthY;
-    } else {
-        currentMouthX = closeMouthX;
-        currentMouthY = closeMouthY; 
+
+    //beat Circle
+
+    let bassEnergy = fft.getEnergy('bass') / 255; //normalize to 0-1
+
+    let ballSize = map(bassEnergy, 0, 0.3, 0 , height /8);
+    ball.size = ballSize / 2 ;
+    
+    // ball.x += ball.xSpeed;
+    ball.y -= ball.ySpeed;
+
+    // if(ball.x + ball.size / 2 > width || ball.x - ball.size / 2 < 0){
+    //     ball.xSpeed *= -1;
+    // }
+
+    if(ball.y < ball.jumpHeight) {
+        ball.ySpeed *= -1;
     }
 
-    ellipse(width/2, height/2 + 30, currentMouthX, currentMouthY);
+    if(ball.y > ball.floorHeight){
+        ball.ySpeed *= -1;
+    }
+
+    // if(bassEnergy >= 0.9){
+    //     beatPulse = 100;
+    //     someHeight -=0.5;
+        
+    // } else {
+    //     beatPulse = 50;
+    //     someHeight+= 0.5;
+    // }someHeight-=0.5;
+
+    fill(255, 255, 255);
+    // ellipse(width/2 - someHeight, (height/2 - 150) - someHeight, beatPulse, beatPulse);
+    ellipse(ball.x, ball.y, ball.size);
 
     //Time Counter
     fill(255, 255, 255);
