@@ -8,10 +8,6 @@ body {
     margin: 0 auto;
 }
 
-/* .ui-container {
-    display: flex;
-} */
-
 .volume-container, .pan-container {
     position: relative;
     text-align: center;
