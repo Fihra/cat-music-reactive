@@ -9,26 +9,24 @@ body {
 }
 
 .volume-container, .pan-container {
+    height: 50px;
     position: relative;
     text-align: center;
 }
 
 .volume-container label, .pan-container label {
-    position: absolute;
-    top: 50px;
+    /* position: absolute;
+    top: 50px; */
+    margin-right: 25px;
 }
 
 #volume, #panning {
     -webkit-appearance: none;
     appearance: none;
     width: 200px;
-    height: 25px;
-    /* transform: rotate(270deg); */
     border-radius: 5px;
     background: linear-gradient(to right, #2196f3 50%, #ddd 50%);
     outline: none;
-    margin-top: 85px;
-    margin-bottom: 25px;
     transition: background .3s;
 }
 
