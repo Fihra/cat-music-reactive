@@ -87,8 +87,14 @@ let critter = {
     head: {
         x:400,
         y:150,
+        currentXSize: 100,
+        currentYSize: 100,
         xSize: 100,
-        ySize: 100
+        ySize: 100,
+        xBigSize: 130,
+        yBigSize: 130,
+        xSpeed: 2,
+        ySpeed: 2
     },
     leftEye: {
         x1: 220,
@@ -282,10 +288,18 @@ function myCreature(){
     curve(critter.leftEye.x1, critter.leftEye.y1, critter.leftEye.x2, critter.leftEye.y2, critter.leftEye.x3, critter.leftEye.y3, critter.leftEye.x4, critter.leftEye.y4);
     curve(critter.rightEye.x1, critter.rightEye.y1, critter.rightEye.x2, critter.rightEye.y2, critter.rightEye.x3, critter.rightEye.y3, critter.rightEye.x4, critter.rightEye.y4);
 
-    console.log("Bass: " + fft.getEnergy("bass") / 255);
+    let bassBeat = fft.getEnergy("bass") / 255;
+
+    let newHeadSize = map(bassBeat, 0, 0.5, 0, 25);
+
+    critter.head.currentXSize += 0.01;
+    critter.head.currentYSize += 0.01;
+
+    critter.head.xSize = critter.head.currentXSize + newHeadSize;
+    critter.head.ySize = critter.head.currentYSize + newHeadSize;
 
     //Mouth
-    if(fft.getEnergy("bass") / 255 >= 0.9){
+    if(bassBeat >= 0.9){
         currentMouthX = critter.mouth.openMouthX;
         currentMouthY = critter.mouth.openMouthY;
     } else {
@@ -325,20 +339,9 @@ function draw(){
     fft.analyze();
     peakDetect.update(fft);
 
-
-
     myCreature();
-
-    // console.log(peakDetect);
-    //peakDetect.energy > 0.2
-    // if(fft.getEnergy("bass") > 200)
-
-
-    // console.log(fft.getEnergy("bass"));
         
-
     //beat Circle
-
     let bassEnergy = fft.getEnergy('bass') / 255; //normalize to 0-1
 
     let ballSize = map(bassEnergy, 0, 0.3, 0 , height /8);
@@ -347,10 +350,6 @@ function draw(){
     // ball.x += ball.xSpeed;
     ball.y -= ball.ySpeed;
 
-    // if(ball.x + ball.size / 2 > width || ball.x - ball.size / 2 < 0){
-    //     ball.xSpeed *= -1;
-    // }
-
     if(ball.y < ball.jumpHeight) {
         ball.ySpeed *= -1;
     }
@@ -358,6 +357,13 @@ function draw(){
     if(ball.y > ball.floorHeight){
         ball.ySpeed *= -1;
     }
+
+    fill(255, 255, 255);
+    // ellipse(ball.x, ball.y, ball.size);
+
+    // if(ball.x + ball.size / 2 > width || ball.x - ball.size / 2 < 0){
+    //     ball.xSpeed *= -1;
+    // }
 
     // if(bassEnergy >= 0.9){
     //     beatPulse = 100;
@@ -368,9 +374,7 @@ function draw(){
     //     someHeight+= 0.5;
     // }someHeight-=0.5;
 
-    fill(255, 255, 255);
     // ellipse(width/2 - someHeight, (height/2 - 150) - someHeight, beatPulse, beatPulse);
-    ellipse(ball.x, ball.y, ball.size);
 
     //Time Counter
     fill(255, 255, 255);
