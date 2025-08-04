@@ -1,6 +1,8 @@
 body {
     background: linear-gradient(to bottom, #d1a8ff, #a0ffa0);
-    font-family: "Faustina", serif;;
+    background-repeat: no-repeat;
+    height: 100vh;
+    font-family: "Faustina", serif;
 }
 
 #main-canvas {
