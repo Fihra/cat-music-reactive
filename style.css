@@ -14,17 +14,17 @@ body {
     height: 50px;
     position: relative;
     text-align: center;
+    display: flex;
 }
 
 .volume-container label, .pan-container label {
-    /* position: absolute;
-    top: 50px; */
-    margin-right: 25px;
+    flex: 0 0 55%;
 }
 
 #volume, #panning {
     -webkit-appearance: none;
     appearance: none;
+    height: 20px;
     width: 200px;
     border-radius: 5px;
     background: linear-gradient(to right, #2196f3 50%, #ddd 50%);
@@ -32,6 +32,33 @@ body {
     transition: background .3s;
 }
 
+.rate-container {
+    overflow: hidden;
+    text-align: center;
+    position: relative;
+    margin-bottom: 20px;  
+    padding-bottom: 40px;  
+}
+
+.change-rate-text {
+    position: relative;
+}
+
+#right-arrow, #left-arrow {
+    font-size: 35px;
+    font-weight: bold;
+    position: absolute;
+}
+
+#right-arrow {
+    top: 100%;
+    right: 45%;
+}
+
+#left-arrow {
+    top: 100%;
+    left: 45%;
+}
 
 /* Thumb for WebKit (Chrome, Safari) */
 #volume::-webkit-slider-thumb, #panning::-webkit-slider-thumb {
@@ -81,7 +108,7 @@ body {
     display: block;
     background-color: green;
     width: 120px;
-    height: 80px;
+    height: 50px;
     font-size: 24px;
     margin: 0 auto;
     margin-top: 8px;
