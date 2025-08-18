@@ -60,6 +60,10 @@ body {
     left: 45%;
 }
 
+#right-arrow:hover, #left-arrow:hover {
+    cursor: pointer;
+}
+
 /* Thumb for WebKit (Chrome, Safari) */
 #volume::-webkit-slider-thumb, #panning::-webkit-slider-thumb {
   -webkit-appearance: none;
