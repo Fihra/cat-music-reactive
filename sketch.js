@@ -135,6 +135,18 @@ leftArrow.addEventListener("click", () => {
         speedRateValue.innerText = currentSpeedRate;
 })
 
+rightArrow.addEventListener("click", () => {
+        currentSpeedRate++;
+        song.rate(song.rate() + 0.1);
+        speedRateValue.innerText = currentSpeedRate;
+})
+
+leftArrow.addEventListener("click", () => {
+        currentSpeedRate--;
+        song.rate(song.rate() - 0.1);
+        speedRateValue.innerText = currentSpeedRate;
+})
+
 function preload(){
     song = loadSound('random_sketch1.wav');
     currentSong = song;
